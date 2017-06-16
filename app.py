@@ -32,4 +32,4 @@ def poll_open():
     username = open_requests.pop(locker, None)
     if username is not None:
         return jsonify(username = username)
-    return('', 204)
+    return('', 200)
