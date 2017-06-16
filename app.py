@@ -29,6 +29,7 @@ def open():
 @app.route('/open', methods = ['GET'])
 def poll_open():
     locker = request.args.get('locker', None, int)
-    if locker is not None and locker in open_requests:
-        return jsonify(username = open_requests[locker])
+    username = open_requests.pop(locker, None)
+    if username is not None:
+        return jsonify(username = username)
     return('', 204)
