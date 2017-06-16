@@ -5,6 +5,7 @@ from flask_cors import CORS, cross_origin
 from datetime import datetime
 
 app = Flask(__name__)
+CORS(app)
 
 open_requests = {}
 access_control_list = {
