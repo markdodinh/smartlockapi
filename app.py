@@ -2,9 +2,9 @@ from flask import Flask
 from flask import request
 from flask import jsonify
 from flask_cors import CORS, cross_origin
+from datetime import datetime
 
 app = Flask(__name__)
-CORS(app)
 
 open_requests = {}
 access_control_list = {
@@ -30,18 +30,28 @@ def open():
     if lockerId not in access_control_list or access_control_list[lockerId] != username:
         return('', 403)
 
-    open_requests[lockerId] = username
+    open_requests[lockerId] = (username, datetime.now())
     return('', 200)
 
 @app.route('/open', methods = ['GET'])
 def poll_open():
     locker = request.args.get('locker', None, int)
-    username = open_requests.pop(locker, '')
+    username = ''
+    if locker in open_requests:
+        obj = open_requests[locker]
+        if (datetime.now() - obj[1]).total_seconds() > 12:
+            username = ''
+        else:
+            username = open_requests[locker][0]
     return jsonify(username = username)
 
 @app.route('/list', methods = ['GET'])
 def list():
     arr = {}
     for locker in access_control_list.keys():
-        arr['locker' + str(locker)] = locker in open_requests 
+        arr['locker' + str(locker)] = locker in open_requests
+        if locker in open_requests:
+            obj = open_requests[locker]
+            if (datetime.now() - obj[1]).total_seconds() > 12:
+                 arr['locker' + str(locker)] = False
     return jsonify(arr)
