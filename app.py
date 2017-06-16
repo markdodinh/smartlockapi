@@ -5,16 +5,26 @@ from flask import jsonify
 app = Flask(__name__)
 
 open_requests = {}
+access_control_list = {
+    1 : 'user1'
+}
 
 @app.route('/open', methods = ['POST'])
 def open():
     data = request.get_json()
     locker = data.get('locker', None)
-    if locker is not None and 'user' in data:
-        open_requests[int(locker)] = data['user']
-        return('', 200)
-    else:    
+    
+    if locker is None or 'user' not in data:
         return('', 400)
+
+    username = data['user']
+    lockerId = int(locker)
+    
+    if lockerId not in access_control_list or access_control_list[lockerId] != username:
+        return('', 403)
+
+    open_requests[lockerId] = username
+    return('', 200)
 
 @app.route('/open', methods = ['GET'])
 def poll_open():
